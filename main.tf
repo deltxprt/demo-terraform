@@ -18,13 +18,13 @@ terraform {
 }
 
 variable "VAULTTOKEN" {
-    type = string
-    description = "Vault token for authentication to fetch secrets"
+  type        = string
+  description = "Vault token for authentication to fetch secrets"
 }
 
 provider "vault" {
-  address         = "https://vault.lab.markaplay.net"
-  token           = var.VAULTTOKEN
+  address = "https://vault.lab.markaplay.net"
+  token   = var.VAULTTOKEN
 }
 
 data "vault_generic_secret" "azsecrets" {
