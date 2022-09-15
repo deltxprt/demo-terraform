@@ -1,4 +1,10 @@
 terraform {
+  cloud {
+    organization = "markaplay"
+    workspaces {
+      name = "demo"
+    }
+  }
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -17,7 +23,7 @@ variable "VAULTTOKEN" {
 }
 
 provider "vault" {
-  address         = "https://vault.lab.markplay.net"
+  address         = "https://vault.lab.markaplay.net"
   token           = var.VAULTTOKEN
 }
 
