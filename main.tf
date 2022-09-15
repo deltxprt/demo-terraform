@@ -1,6 +1,7 @@
 terraform {
   cloud {
     organization = "markaplay"
+
     workspaces {
       name = "demo"
     }
