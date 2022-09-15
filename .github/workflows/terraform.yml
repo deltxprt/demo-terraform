@@ -16,6 +16,8 @@ jobs:
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
+      - name: Set environnement var
+        run: export TF_VAR_VAULTTOKEN=${{secrets.TF_VAR_VAULTTOKEN}}
       - name: Terraform fmt
         id: fmt
         run: terraform fmt -check
