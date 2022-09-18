@@ -9,15 +9,13 @@ on:
       - main
 jobs:
   terraform:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: hashicorp/setup-terraform@v2
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-      - name: Set environnement var
-        run: export TF_VAR_VAULTTOKEN=${{secrets.TF_VAR_VAULTTOKEN}}
       - name: Terraform fmt
         id: fmt
         run: terraform fmt -check
@@ -35,4 +33,4 @@ jobs:
       - name: Terraform Apply
         id: apply
         if: steps.plan.outcome == 'success'
-        run: terraform apply -var TF_VAR_VAULTTOKEN=${{ secrets.TF_VAR_VAULTTOKEN }} -auto-approve -no-color
+        run: terraform apply -auto-approve -no-color

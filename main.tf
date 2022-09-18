@@ -13,14 +13,29 @@ terraform {
     }
     vault = {
       source  = "hashicorp/vault"
-      version = "3.4.1"
+      version = "~>3.8.0"
     }
   }
 }
 
-variable "VAULTTOKEN" {
+variable "AZ_SUBID" {
   type        = string
-  description = "Vault token for authentication to fetch secrets"
+  description = "Azure subscription ID"
+}
+
+variable "AZ_CLIENTID" {
+  type        = string
+  description = "azure client id"
+}
+
+variable "AZ_CLIENTSECRET" {
+  type        = string
+  description = "azure client secret"
+}
+
+variable "AZ_TENNANTID" {
+  type        = string
+  description = "azure tennant id"
 }
 
 provider "vault" {
@@ -36,80 +51,66 @@ data "vault_generic_secret" "azsecrets" {
 provider "azurerm" {
   features {}
 
-  subscription_id = data.vault_generic_secret.azsecrets.subid
-  client_id       = data.vault_generic_secret.azsecrets.clientid
-  client_secret   = data.vault_generic_secret.azsecrets.clientsecret
-  tenant_id       = data.vault_generic_secret.azsecrets.tenantid
+  subscription_id = data.vault_generic_secret.azsecrets.data["subid"]
+  client_id       = data.vault_generic_secret.azsecrets.data["clientid"]
+  client_secret   = data.vault_generic_secret.azsecrets.data["clientsecret"]
+  tenant_id       = data.vault_generic_secret.azsecrets.data["tenantid"]
 }
 
-variable "prefix" {
-  default = "terra"
-}
-
-resource "azurerm_resource_group" "demo-rs" {
-  name     = "${var.prefix}-resources"
+resource "azurerm_resource_group" "example" {
+  name     = "example-resources"
   location = "Canada East"
 }
 
-resource "azurerm_virtual_network" "demo-vnet" {
-  name                = "${var.prefix}-network"
+resource "azurerm_virtual_network" "example" {
+  name                = "example-network"
   address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.demo-rs.location
-  resource_group_name = azurerm_resource_group.demo-rs.name
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
 }
 
-resource "azurerm_subnet" "demo-subnet" {
+resource "azurerm_subnet" "example" {
   name                 = "internal"
-  resource_group_name  = azurerm_resource_group.demo-rs.name
-  virtual_network_name = azurerm_virtual_network.demo-vnet.name
+  resource_group_name  = azurerm_resource_group.example.name
+  virtual_network_name = azurerm_virtual_network.example.name
   address_prefixes     = ["10.0.2.0/24"]
 }
 
-resource "azurerm_network_interface" "demo-nic" {
-  name                = "${var.prefix}-nic"
-  location            = azurerm_resource_group.demo-rs.location
-  resource_group_name = azurerm_resource_group.demo-rs.name
+resource "azurerm_network_interface" "example" {
+  name                = "example-nic"
+  location            = azurerm_resource_group.example.location
+  resource_group_name = azurerm_resource_group.example.name
 
   ip_configuration {
-    name                          = "demo-terraform"
-    subnet_id                     = azurerm_subnet.internal.id
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.example.id
     private_ip_address_allocation = "Dynamic"
   }
 }
 
-resource "azurerm_virtual_machine" "demo-vm" {
-  name                  = "${var.prefix}-vm"
-  location              = azurerm_resource_group.demo-rs.location
-  resource_group_name   = azurerm_resource_group.demo-rs.name
-  network_interface_ids = [azurerm_network_interface.main.id]
-  vm_size               = "Standard_DS1_v2"
+resource "azurerm_windows_virtual_machine" "example" {
+  name                = "demo-terraform"
+  resource_group_name = azurerm_resource_group.example.name
+  location            = azurerm_resource_group.example.location
+  size                = "Standard_DS1_v2"
+  admin_username      = "myadminuser"
+  admin_password      = "Password1234!"
+  network_interface_ids = [
+    azurerm_network_interface.example.id,
+  ]
 
-  # Uncomment this line to delete the OS disk automatically when deleting the VM
-  # delete_os_disk_on_termination = true
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
 
-  # Uncomment this line to delete the data disks automatically when deleting the VM
-  # delete_data_disks_on_termination = true
-
-  storage_image_reference {
+  source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"
     sku       = "2022-datacenter-azure-edition-smalldisk"
     version   = "latest"
   }
-  storage_os_disk {
-    name              = "osdisk1"
-    caching           = "ReadWrite"
-    create_option     = "FromImage"
-    managed_disk_type = "Premium_LRS"
-  }
-  os_profile {
-    computer_name  = "demo-terraform"
-    admin_username = "myadminuser"
-    admin_password = "Password1234!"
-  }
-  os_profile_windows_config {
-    disable_password_authentication = false
-  }
+  
   tags = {
     environment = "demo"
     auto        = "terraform"
