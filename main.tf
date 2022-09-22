@@ -1,5 +1,5 @@
 terraform {
-  cloud {
+  backend "remote" {
     organization = "markaplay"
 
     workspaces {
@@ -11,54 +11,15 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "=3.0.0"
     }
-    vault = {
-      source  = "hashicorp/vault"
-      version = "~>3.8.0"
-    }
   }
 }
 
-variable "AZ_SUBID" {
-  type        = string
-  description = "Azure subscription ID"
-}
-
-variable "AZ_CLIENTID" {
-  type        = string
-  description = "azure client id"
-}
-
-variable "AZ_CLIENTSECRET" {
-  type        = string
-  description = "azure client secret"
-}
-
-variable "AZ_TENNANTID" {
-  type        = string
-  description = "azure tennant id"
-}
-
-provider "vault" {
-  address = "https://vault.lab.markaplay.net"
-  token   = var.VAULTTOKEN
-}
-
-data "vault_generic_secret" "azsecrets" {
-  path = "Azure/Demo-Terraform"
-}
-
-
 provider "azurerm" {
   features {}
-
-  subscription_id = data.vault_generic_secret.azsecrets.data["subid"]
-  client_id       = data.vault_generic_secret.azsecrets.data["clientid"]
-  client_secret   = data.vault_generic_secret.azsecrets.data["clientsecret"]
-  tenant_id       = data.vault_generic_secret.azsecrets.data["tenantid"]
 }
 
 resource "azurerm_resource_group" "example" {
-  name     = "example-resources"
+  name     = "demo-terraform"
   location = "Canada East"
 }
 
