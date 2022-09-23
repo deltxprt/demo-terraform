@@ -49,31 +49,31 @@ resource "azurerm_network_interface" "example" {
   }
 }
 
-resource "azurerm_windows_virtual_machine" "example" {
-  name                = "demo-terraform"
-  resource_group_name = azurerm_resource_group.example.name
-  location            = azurerm_resource_group.example.location
-  size                = "Standard_DS1_v2"
-  admin_username      = "myadminuser"
-  admin_password      = "Password1234!"
-  network_interface_ids = [
-    azurerm_network_interface.example.id,
-  ]
+# resource "azurerm_windows_virtual_machine" "example" {
+#   name                = "demo-terraform"
+#   resource_group_name = azurerm_resource_group.example.name
+#   location            = azurerm_resource_group.example.location
+#   size                = "Standard_DS1_v2"
+#   admin_username      = "myadminuser"
+#   admin_password      = "Password1234!"
+#   network_interface_ids = [
+#     azurerm_network_interface.example.id,
+#   ]
 
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
-  }
+#   os_disk {
+#     caching              = "ReadWrite"
+#     storage_account_type = "Standard_LRS"
+#   }
 
-  source_image_reference {
-    publisher = "MicrosoftWindowsServer"
-    offer     = "WindowsServer"
-    sku       = "2022-datacenter-azure-edition-smalldisk"
-    version   = "latest"
-  }
+#   source_image_reference {
+#     publisher = "MicrosoftWindowsServer"
+#     offer     = "WindowsServer"
+#     sku       = "2022-datacenter-azure-edition-smalldisk"
+#     version   = "latest"
+#   }
   
-  tags = {
-    environment = "demo"
-    auto        = "terraform"
-  }
-}
+#   tags = {
+#     environment = "demo"
+#     auto        = "terraform"
+#   }
+# }
